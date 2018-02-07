@@ -30,6 +30,10 @@ cat4web.connect();
 cat4web.setFrequency(145500000);
 ```
 
+Before use
+------------------
+You will need to contact for me before using this library, because the CAT4Web restricts sites where the application can be used to avoid of  the security problems.
+
 Dependencies
 ------------------
 Of course, you can not control the transceiver directly from the browser. 
