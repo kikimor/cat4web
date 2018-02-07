@@ -1,4 +1,4 @@
-CAT4Web
+CAT4Web.js
 ======
 CAT4Web - CAT features on the Web! 
 
