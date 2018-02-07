@@ -1,3 +1,11 @@
+/**
+ * JS version: v.0.1.0.
+ * Compatible with: v.0.1.0 CAT4Web.exe.
+ *
+ * Author R8ACC.
+ * Homepage https://github.com/kikimor/cat4web
+ * CAT4Web https://kikimor.ru/cat4web
+ */
 function CAT4Web() {
     this.MODE_CW_U = 0x00800000;
     this.MODE_CW_L = 0x01000000;
