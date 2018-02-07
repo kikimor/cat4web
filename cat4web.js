@@ -128,13 +128,16 @@ function CAT4Web() {
             return false;
         }
 
-        connectState = true;
-        socket = new WebSocket("ws://127.0.0.1:34469");
-        socket.onopen = onOpen;
-        socket.onclose = onClose;
-        socket.onmessage = onMessage;
+        if (!connectState) {
+            connectState = true;
+            socket = new WebSocket("ws://127.0.0.1:34469");
+            socket.onopen = onOpen;
+            socket.onclose = onClose;
+            socket.onmessage = onMessage;
+            return true;
+        }
 
-        return true;
+        return false;
     };
 
     /**
@@ -144,7 +147,8 @@ function CAT4Web() {
     this.disconnect = function () {
         connectState = isActive = false;
         if (socket) {
-            return socket.close();
+            socket.close();
+            return true;
         }
         return false;
     };
@@ -176,6 +180,7 @@ function CAT4Web() {
         self.onDisconnect();
 
         if (connectState) {
+            connectState = false;
             setTimeout(function () {
                 self.connect();
             }, self.reconnectTimeout);
