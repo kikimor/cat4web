@@ -27,6 +27,12 @@ function CAT4Web() {
      */
     this.reconnectTimeout = 5000;
 
+    /**
+     * WebSocket connection protocol. WS or WSS.
+     * @type {boolean}
+     */
+    this.secureConnection = false;
+
     var socket = null,
         connectState = false,
         isActive = false,
@@ -128,9 +134,13 @@ function CAT4Web() {
             return false;
         }
 
+        if (location.protocol === 'https:') {
+            this.secureConnection = true;
+        }
+
         if (!connectState) {
             connectState = true;
-            socket = new WebSocket("ws://127.0.0.1:34469");
+            socket = new WebSocket(this.secureConnection ? 'wss://localhost.r8acc.ru:34469' : 'ws://127.0.0.1:34468');
             socket.onopen = onOpen;
             socket.onclose = onClose;
             socket.onmessage = onMessage;
