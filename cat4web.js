@@ -4,7 +4,7 @@
  *
  * Author R8ACC.
  * Homepage https://github.com/kikimor/cat4web
- * CAT4Web https://kikimor.ru/cat4web
+ * CAT4Web https://cat4web.r8acc.ru
  */
 function CAT4Web() {
     this.MODE_CW_U = 0x00800000;
@@ -158,7 +158,7 @@ function CAT4Web() {
      */
     function onOpen() {
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://licence.kikimor.ru/cat4web/request', true);
+        xhr.open('POST', 'https://cat4web.r8acc.ru/licence/request', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
