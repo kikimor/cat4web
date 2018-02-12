@@ -85,6 +85,25 @@ function CAT4Web() {
     };
 
     /**
+     * Get current connect status to OmniRig server as string.
+     * @returns {string}
+     */
+    this.getStatusText = function () {
+        switch (status) {
+            case self.STATUS_NOTCONFIGURED:
+                return 'Rig is not configured';
+            case self.STATUS_DISABLED:
+                return 'Rig is disabled';
+            case self.STATUS_PORTBUSY:
+                return 'Port is not available';
+            case self.STATUS_NOTRESPONDING:
+                return 'Rig is not responding';
+            case self.STATUS_ONLINE:
+                return 'On-line';
+        }
+    };
+
+    /**
      * Get current frequency in Hz.
      * @returns {int}
      */
