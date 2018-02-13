@@ -38,19 +38,14 @@ function CAT4Web() {
         connectState = false,
         isActive = false,
         self = this,
-        rigNumber = null,
-        status = null,
-        frequency = null,
-        mode = null,
-        ptt = false;
+        rigInfo = {};
 
     this.onConnect = function () {};
     this.onDisconnect = function () {};
-    this.onChangeRigNumber = function (number) {};
-    this.onChangeStatus = function (status) {};
-    this.onChangeFrequency = function (frequency) {};
-    this.onChangeMode = function (mode) {};
-    this.onChangePTT = function (status) {};
+    this.onChangeStatus = function (rig, status) {};
+    this.onChangeFrequency = function (rig, frequency) {};
+    this.onChangeMode = function (rig, mode) {};
+    this.onChangePTT = function (rig, status) {};
 
     /**
      * Connection to CAT4Web server is active (established).
@@ -61,35 +56,21 @@ function CAT4Web() {
     };
 
     /**
-     * Get using rig number.
-     * @returns {int}
-     */
-    this.getRigNumber = function () {
-        return rigNumber;
-    };
-
-    /**
-     * Set rig number for use.
-     * @param {int} value
-     */
-    this.setRigNumber = function (value) {
-        sendData('rig-number', value);
-    };
-
-    /**
      * Get current connect status to OmniRig server.
+     * @param {int} rig
      * @returns {int}
      */
-    this.getStatus = function() {
-        return status;
+    this.getStatus = function(rig) {
+        return getRigInfo(rig, 'status');
     };
 
     /**
      * Get current connect status to OmniRig server as string.
+     * @param {int} rig
      * @returns {string}
      */
-    this.getStatusText = function () {
-        switch (status) {
+    this.getStatusText = function (rig) {
+        switch (getRigInfo(rig, 'status')) {
             case self.STATUS_NOTCONFIGURED:
                 return 'Rig is not configured';
             case self.STATUS_DISABLED:
@@ -105,43 +86,47 @@ function CAT4Web() {
 
     /**
      * Get current frequency in Hz.
+     * @param {int} rig
      * @returns {int}
      */
-    this.getFrequency = function() {
-        return frequency;
+    this.getFrequency = function(rig) {
+        return getRigInfo(rig, 'frequency')
     };
 
     /**
      * Set frequency in Hz.
-     * @returns {int} value
+     * @param {int} rig
      */
-    this.setFrequency = function(value) {
-        frequency = value;
-        sendData('freq', value);
+    this.setFrequency = function(rig, value) {
+        setRigInfo(rig, 'frequency', value);
+        sendData(rig, 'freq', value);
     };
 
     /**
      * Get current modulation.
+     * @param {int} rig
      * @returns {int}
      */
-    this.getMode = function() {
-        return mode;
+    this.getMode = function(rig) {
+        return getRigInfo(rig, 'mode');
     };
 
     /**
      * Set current modulation.
+     * @param {int} rig
      * @param {int} value
      */
-    this.setMode = function(value) {
-        sendData('mode', value);
+    this.setMode = function(rig, value) {
+        sendData(rig, 'mode', value);
     };
 
     /**
      * Get current PTT status.
+     * @param {int} rig
      * @returns {boolean}
      */
-    this.getPTT = function() {
-        return ptt;
+    this.getPTT = function(rig) {
+        return getRigInfo(rig, 'ptt') || false;
     };
 
     /**
@@ -189,7 +174,7 @@ function CAT4Web() {
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
-                    sendData('token', JSON.parse(xhr.responseText));
+                    socket.send('token:' + JSON.parse(xhr.responseText));
                 } else {
                     socket.close();
                     console.log('Could not get access key. Send mail to i@r8acc.ru.')
@@ -224,25 +209,21 @@ function CAT4Web() {
             self.onConnect();
         } else {
             switch (data.type) {
-                case 'rig-number':
-                    rigNumber = data.value !== null ? parseInt(data.value) : null;
-                    self.onChangeRigNumber(rigNumber);
-                    break;
                 case 'status':
-                    status = data.value !== null ? parseInt(data.value) : null;
-                    self.onChangeStatus(status);
+                    setRigInfo(data.rig, 'status', data.value !== null ? parseInt(data.value) : null);
+                    self.onChangeStatus(data.rig, rigInfo[data.rig].status);
                     break;
                 case 'freq':
-                    frequency = data.value !== null ? parseInt(data.value) : null;
-                    self.onChangeFrequency(frequency);
+                    setRigInfo(data.rig, 'frequency', data.value !== null ? parseInt(data.value) : null);
+                    self.onChangeFrequency(data.rig, getRigInfo(data.rig, 'frequency'));
                     break;
                 case 'mode':
-                    mode = data.value !== null ? parseInt(data.value) : null;
-                    self.onChangeMode(mode);
+                    setRigInfo(data.rig, 'mode', data.value !== null ? parseInt(data.value) : null);
+                    self.onChangeMode(data.rig, getRigInfo(data.rig, 'mode'));
                     break;
                 case 'ptt':
-                    ptt = !!data.value;
-                    self.onChangePTT(ptt);
+                    setRigInfo(data.rig, 'ptt', !!data.value);
+                    self.onChangePTT(data.rig, getRigInfo(data.rig, 'ptt'));
                     break;
             }
         }
@@ -251,12 +232,41 @@ function CAT4Web() {
 
     /**
      * Send data to CAT4Web server.
+     * @param {int} rig
      * @param {string} param
      * @param {string|int} value
      */
-    function sendData(param, value) {
+    function sendData(rig, param, value) {
         if (connectState) {
-            socket.send(param + '=' + value);
+            socket.send(rig + ':' + param + ':' + value);
+        }
+    }
+
+    /**
+     * Get rig value from cache.
+     * @param {int} rig
+     * @param {string} attribute
+     * @returns {*}
+     */
+    function getRigInfo(rig, attribute) {
+        if (rig && rigInfo[rig]) {
+            return rigInfo[rig][attribute];
+        }
+        return null
+    }
+
+    /**
+     * Write rig attribute in cache variable.
+     * @param {int} rig
+     * @param {string} attribute
+     * @param {*} value
+     */
+    function setRigInfo(rig, attribute, value) {
+        if (rig) {
+            if (!rigInfo[rig]) {
+                rigInfo[rig] = {};
+            }
+            rigInfo[rig][attribute] = value;
         }
     }
 }
