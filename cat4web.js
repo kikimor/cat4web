@@ -1,6 +1,6 @@
 /**
- * JS version: v.0.1.0.
- * Compatible with: v.0.1.0 CAT4Web.exe.
+ * JS version: v.0.2.1.
+ * Compatible with: v.0.2.1.* CAT4Web.exe.
  *
  * Author R8ACC.
  * Homepage https://github.com/kikimor/cat4web
