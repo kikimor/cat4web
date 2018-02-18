@@ -44,6 +44,8 @@ function CAT4Web() {
     this.onDisconnect = function () {};
     this.onChangeStatus = function (rig, status) {};
     this.onChangeFrequency = function (rig, frequency) {};
+    this.onChangeRxFrequency = function (rig, frequency) {};
+    this.onChangeTxFrequency = function (rig, frequency) {};
     this.onChangeMode = function (rig, mode) {};
     this.onChangePTT = function (rig, status) {};
 
@@ -103,6 +105,24 @@ function CAT4Web() {
     };
 
     /**
+     * Get current RX frequency in Hz.
+     * @param {int} rig
+     * @returns {int}
+     */
+    this.getRxFrequency = function(rig) {
+        return getRigInfo(rig, 'rx-frequency')
+    };
+
+    /**
+     * Get current TX frequency in Hz.
+     * @param {int} rig
+     * @returns {int}
+     */
+    this.getTxFrequency = function(rig) {
+        return getRigInfo(rig, 'tx-frequency')
+    };
+
+    /**
      * Get current modulation.
      * @param {int} rig
      * @returns {int}
@@ -127,6 +147,15 @@ function CAT4Web() {
      */
     this.getPTT = function(rig) {
         return getRigInfo(rig, 'ptt') || false;
+    };
+
+    /**
+     * Set current PTT status.
+     * @param {int} rig
+     * @param {boolean|int} value
+     */
+    this.setPTT = function(rig, value) {
+        sendData(rig, 'ptt', !!value);
     };
 
     /**
@@ -216,6 +245,14 @@ function CAT4Web() {
                 case 'freq':
                     setRigInfo(data.rig, 'frequency', data.value !== null ? parseInt(data.value) : null);
                     self.onChangeFrequency(data.rig, getRigInfo(data.rig, 'frequency'));
+                    break;
+                case 'rx-freq':
+                    setRigInfo(data.rig, 'rx-frequency', data.value !== null ? parseInt(data.value) : null);
+                    self.onChangeRxFrequency(data.rig, getRigInfo(data.rig, 'rx-frequency'));
+                    break;
+                case 'tx-freq':
+                    setRigInfo(data.rig, 'tx-frequency', data.value !== null ? parseInt(data.value) : null);
+                    self.onChangeTxFrequency(data.rig, getRigInfo(data.rig, 'tx-frequency'));
                     break;
                 case 'mode':
                     setRigInfo(data.rig, 'mode', data.value !== null ? parseInt(data.value) : null);
