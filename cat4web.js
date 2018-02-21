@@ -1,6 +1,6 @@
 /**
- * JS version: v.0.2.1.
- * Compatible with: v.0.2.1.* CAT4Web.exe.
+ * JS version: v.0.2.2.
+ * Compatible with: v.0.2.2.* CAT4Web.exe.
  *
  * Author R8ACC.
  * Homepage https://github.com/kikimor/cat4web
@@ -38,7 +38,8 @@ function CAT4Web() {
         connectState = false,
         isActive = false,
         self = this,
-        rigInfo = {};
+        rigInfo = {},
+        version = null;
 
     this.onConnect = function () {};
     this.onDisconnect = function () {};
@@ -46,6 +47,9 @@ function CAT4Web() {
     this.onChangeFrequency = function (rig, frequency) {};
     this.onChangeRxFrequency = function (rig, frequency) {};
     this.onChangeTxFrequency = function (rig, frequency) {};
+    this.onChangeFrequencyOffset = function (rig, frequency) {};
+    this.onChangeRIT = function (rig, status) {};
+    this.onChangeXIT = function (rig, status) {};
     this.onChangeMode = function (rig, mode) {};
     this.onChangePTT = function (rig, status) {};
 
@@ -53,8 +57,16 @@ function CAT4Web() {
      * Connection to CAT4Web server is active (established).
      * @returns {boolean}
      */
-    this.isActive = function() {
+    this.isActive = function () {
         return isActive;
+    };
+
+    /**
+     * Get CAT4Web version.
+     * @returns {string}
+     */
+    this.getVersion = function () {
+        return version;
     };
 
     /**
@@ -62,7 +74,7 @@ function CAT4Web() {
      * @param {int} rig
      * @returns {int}
      */
-    this.getStatus = function(rig) {
+    this.getStatus = function (rig) {
         return getRigInfo(rig, 'status');
     };
 
@@ -91,15 +103,16 @@ function CAT4Web() {
      * @param {int} rig
      * @returns {int}
      */
-    this.getFrequency = function(rig) {
+    this.getFrequency = function (rig) {
         return getRigInfo(rig, 'frequency')
     };
 
     /**
      * Set frequency in Hz.
      * @param {int} rig
+     * @param {int} value
      */
-    this.setFrequency = function(rig, value) {
+    this.setFrequency = function (rig, value) {
         setRigInfo(rig, 'frequency', value);
         sendData(rig, 'freq', value);
     };
@@ -109,7 +122,7 @@ function CAT4Web() {
      * @param {int} rig
      * @returns {int}
      */
-    this.getRxFrequency = function(rig) {
+    this.getRxFrequency = function (rig) {
         return getRigInfo(rig, 'rx-frequency')
     };
 
@@ -118,8 +131,53 @@ function CAT4Web() {
      * @param {int} rig
      * @returns {int}
      */
-    this.getTxFrequency = function(rig) {
+    this.getTxFrequency = function (rig) {
         return getRigInfo(rig, 'tx-frequency')
+    };
+
+    /**
+     * Get current frequency offset in Hz.
+     * @param {int} rig
+     * @returns {int}
+     */
+    this.getFrequencyOffset = function (rig) {
+        return getRigInfo(rig, 'frequency-offset')
+    };
+
+    /**
+     * Get current PTT status.
+     * @param {int} rig
+     * @returns {boolean}
+     */
+    this.getRIT = function (rig) {
+        return getRigInfo(rig, 'rit');
+    };
+
+    /**
+     * Set current RIT status.
+     * @param {int} rig
+     * @param {boolean|int} value
+     */
+    this.setRIT = function (rig, value) {
+        sendData(rig, 'rit', !!value);
+    };
+
+    /**
+     * Get current RIT status.
+     * @param {int} rig
+     * @returns {boolean}
+     */
+    this.getXIT = function (rig) {
+        return getRigInfo(rig, 'xit');
+    };
+
+    /**
+     * Set current XIT status.
+     * @param {int} rig
+     * @param {boolean|int} value
+     */
+    this.setXIT = function (rig, value) {
+        sendData(rig, 'xit', !!value);
     };
 
     /**
@@ -127,7 +185,7 @@ function CAT4Web() {
      * @param {int} rig
      * @returns {int}
      */
-    this.getMode = function(rig) {
+    this.getMode = function (rig) {
         return getRigInfo(rig, 'mode');
     };
 
@@ -136,7 +194,7 @@ function CAT4Web() {
      * @param {int} rig
      * @param {int} value
      */
-    this.setMode = function(rig, value) {
+    this.setMode = function (rig, value) {
         sendData(rig, 'mode', value);
     };
 
@@ -145,8 +203,8 @@ function CAT4Web() {
      * @param {int} rig
      * @returns {boolean}
      */
-    this.getPTT = function(rig) {
-        return getRigInfo(rig, 'ptt') || false;
+    this.getPTT = function (rig) {
+        return getRigInfo(rig, 'ptt');
     };
 
     /**
@@ -154,7 +212,7 @@ function CAT4Web() {
      * @param {int} rig
      * @param {boolean|int} value
      */
-    this.setPTT = function(rig, value) {
+    this.setPTT = function (rig, value) {
         sendData(rig, 'ptt', !!value);
     };
 
@@ -163,6 +221,8 @@ function CAT4Web() {
      * @returns {boolean}
      */
     this.connect = function () {
+        version = null;
+
         if (typeof WebSocket !== 'function') {
             console.log('WebSocket not supported for you. Sorry.');
             return false;
@@ -185,6 +245,7 @@ function CAT4Web() {
      * @returns {*}
      */
     this.disconnect = function () {
+        version = null;
         connectState = isActive = false;
         if (socket) {
             socket.close();
@@ -236,6 +297,8 @@ function CAT4Web() {
         if (data.auth === true) {
             isActive = true;
             self.onConnect();
+        } else if (data.version) {
+            version = data.version;
         } else {
             switch (data.type) {
                 case 'status':
@@ -253,6 +316,18 @@ function CAT4Web() {
                 case 'tx-freq':
                     setRigInfo(data.rig, 'tx-frequency', data.value !== null ? parseInt(data.value) : null);
                     self.onChangeTxFrequency(data.rig, getRigInfo(data.rig, 'tx-frequency'));
+                    break;
+                case 'freq-offset':
+                    setRigInfo(data.rig, 'frequency-offset', data.value !== null ? parseInt(data.value) : null);
+                    self.onChangeFrequencyOffset(data.rig, getRigInfo(data.rig, 'frequency-offset'));
+                    break;
+                case 'rit':
+                    setRigInfo(data.rig, 'rit', data.value !== null ? !!data.value : null);
+                    self.onChangeRIT(data.rig, getRigInfo(data.rig, 'rit'));
+                    break;
+                case 'xit':
+                    setRigInfo(data.rig, 'xit', data.value !== null ? !!data.value : null);
+                    self.onChangeXIT(data.rig, getRigInfo(data.rig, 'xit'));
                     break;
                 case 'mode':
                     setRigInfo(data.rig, 'mode', data.value !== null ? parseInt(data.value) : null);
