@@ -1,5 +1,5 @@
 /**
- * JS version: v.0.2.2.
+ * JS version: v.0.2.3.
  * Compatible with: v.0.2.2.* CAT4Web.exe.
  *
  * Author R8ACC.
@@ -33,8 +33,7 @@ function CAT4Web() {
      */
     this.secureConnection = location.protocol === 'https:';
 
-    var host = 'cat4web.localhost.r8acc.ru',
-        socket = null,
+    var socket = null,
         connectState = false,
         isActive = false,
         self = this,
@@ -230,7 +229,8 @@ function CAT4Web() {
 
         if (!connectState) {
             connectState = true;
-            socket = new WebSocket(this.secureConnection ? 'wss://' + host + ':34469' : 'ws://' + host + ':34468');
+            socket = new WebSocket(this.secureConnection ? 'wss://cat4web.localhost.r8acc.ru:34469' :
+                'ws://127.0.0.1:34468');
             socket.onopen = onOpen;
             socket.onclose = onClose;
             socket.onmessage = onMessage;
