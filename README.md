@@ -19,15 +19,15 @@ How to use?
 ------------------
 ```js
 var cat4web = new CAT4Web();
-cat4web.onChangeFrequency = function (value) {
-    console.log(value); 
+cat4web.onChangeFrequency = function (rig, value) {
+    console.log(rig, value); 
 };
-cat4web.onChangeMode = function (value) {
-    console.log(value);
+cat4web.onChangeMode = function (rig, value) {
+    console.log(rig, value); 
 };
 cat4web.connect();
 ...
-cat4web.setFrequency(145500000);
+cat4web.setFrequency(1, 145500000);
 ```
 
 Before use
