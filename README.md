@@ -41,5 +41,5 @@ Of course, you can not control the transceiver directly from the browser.
 You need install of a special program - CAT4Web, which, in turn, requires installation Omni-Rig.
 
 So, you need to download and install:
-* CAT4Web - https://kikimor.ru/cat4web
+* CAT4Web - https://cat4web.r8acc.ru/
 * Omni-Rig - http://dxatlas.com/omnirig/
